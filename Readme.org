@@ -1,0 +1,118 @@
+* Wi-Fi energy experiments reproducibility
+
+This repository contains information and archives of the experiments used in the
+paper "A Wi-Fi Energy Model for Scalable Simulation".
+
+Part of the code samples proposed in this file can be executed directly using org-mode.
+
+* Structure
+
+** Dependencies
+
+- SimGrid
+  - Version: patched v3.32.1 (soon in the official repository of SimGrid)
+  - Link: https://framagit.org/klement/simgrid/-/tree/wifi_clean
+
+- ns-3
+  - Version: patched 3.36.1
+  - Link: https://www.nsnam.org/releases/
+  - Patch file: [[./ns-3.36.1.patch]]
+
+
+*** Install dependencies
+
+Run the following code block to install dependencies in ${currDir}
+
+#+NAME: installDeps
+#+BEGIN_SRC bash :results none
+  # the directory used to install the dependencies
+  currDir=${PWD}
+  root=~/dep_wifi_energy/
+  mkdir -p ${root}
+  cd ${root}
+
+  # Install SimGrid into ${root}/simgrid
+  git clone https://framagit.org/klement/simgrid.git
+  cd simgrid
+  git checkout wifi_clean
+  mkdir build && cd build
+  cmake ..
+  make -j$(nproc)
+  cd ${root}
+  
+  # Install ns-3 into ${root}/ns-allinone-3.36.1/
+  wget https://www.nsnam.org/releases/ns-allinone-3.36.1.tar.bz2
+  tar -xvf ns-allinone-3.36.1.tar.bz2
+  cd ${root}/ns-allinone-3.36.1
+  # Patch the wifi energy model to allow observing dynamic energy separately
+  patch -u ns-3.36.1/src/wifi/model/wifi-radio-energy-model.cc -i ${currDir}/ns-3.36.1.patch
+  python build.py
+
+#+END_SRC
+
+*** Build executable files
+
+Run the following code block to build the binaries of the simulators
+
+#+NAME: makeBinaries
+#+BEGIN_SRC bash  :results drawer
+  root=~/dep_wifi_energy/
+  sgPath=${root}/simgrid/
+  nsPath=${root}/ns-allinone-3.36.1/ns-3.36.1/
+  currDir=${PWD}
+
+  # create simlinks and build simulators
+  cd ${currDir}/microbenchmarks/simgrid/
+  ln -s ${sgPath} simgrid
+  make clean && make
+  cd ${currDir}/microbenchmarks/ns-3/
+  ln -s ${nsPath} ns-3
+  make clean && make
+
+  cd ${currDir}/large_use_case/simgrid/
+  ln -s ${sgPath} simgrid
+  make clean && make
+  cd ${currDir}/large_use_case/ns-3/
+  ln -s ${nsPath} ns-3
+  make clean && make
+
+  #+END_SRC
+
+  #+RESULTS: makeBinaries
+  :results:
+  rm benchmarks simplemix
+  g++ --std=c++17 -fPIC -L ./simgrid/build/lib -lsimgrid -I ./simgrid/build/include -I ./simgrid/include -I ./simgrid/ -I ./simgrid/build/ src/benchmarks.cc -o benchmarks -L ./simgrid/build/lib -lsimgrid -I ./simgrid/build/include -I ./simgrid/include -I ./simgrid/ -I ./simgrid/build/
+  g++ --std=c++17 -fPIC -L ./simgrid/build/lib -lsimgrid -I ./simgrid/build/include -I ./simgrid/include -I ./simgrid/ -I ./simgrid/build/ src/simplemix.cpp -o simplemix -L ./simgrid/build/lib -lsimgrid -I ./simgrid/build/include -I ./simgrid/include -I ./simgrid/ -I ./simgrid/build/
+  rm benchmarks simplemix
+  g++ -std=c++17 -fPIC -g  -D NS3_VERSION=\""3.36.1"\" -D NS3_LOG_ENABLE -L ./ns-3//build/lib/ -I ./ns-3//build/include/ -lns3.36.1-bridge-default -lns3.36.1-traffic-control-default -lns3.36.1-network-default -lns3.36.1-dsdv-default -lns3.36.1-propagation-default -lns3.36.1-nix-vector-routing-default -lns3.36.1-antenna-default -lns3.36.1-topology-read-default -lns3.36.1-flow-monitor-default -lns3.36.1-lr-wpan-default -lns3.36.1-internet-default -lns3.36.1-wimax-default -lns3.36.1-config-store-default -lns3.36.1-netanim-default -lns3.36.1-energy-default -lns3.36.1-point-to-point-layout-default -lns3.36.1-uan-default -lns3.36.1-wave-default -lns3.36.1-buildings-default -lns3.36.1-point-to-point-default -lns3.36.1-fd-net-device-default -lns3.36.1-core-default -lns3.36.1-olsr-default -lns3.36.1-csma-layout-default -lns3.36.1-csma-default -lns3.36.1-mobility-default -lns3.36.1-aodv-default -lns3.36.1-mesh-default -lns3.36.1-tap-bridge-default -lns3.36.1-spectrum-default -lns3.36.1-lte-default -lns3.36.1-sixlowpan-default -lns3.36.1-dsr-default -lns3.36.1-applications-default -lns3.36.1-virtual-net-device-default -lns3.36.1-wifi-default -lns3.36.1-stats-default -lns3.36.1-internet-apps-default src/main.cpp src/callbacks.cpp -o benchmarks  -D NS3_LOG_ENABLE -L ./ns-3//build/lib/ -I ./ns-3//build/include/ -lns3.36.1-bridge-default -lns3.36.1-traffic-control-default -lns3.36.1-network-default -lns3.36.1-dsdv-default -lns3.36.1-propagation-default -lns3.36.1-nix-vector-routing-default -lns3.36.1-antenna-default -lns3.36.1-topology-read-default -lns3.36.1-flow-monitor-default -lns3.36.1-lr-wpan-default -lns3.36.1-internet-default -lns3.36.1-wimax-default -lns3.36.1-config-store-default -lns3.36.1-netanim-default -lns3.36.1-energy-default -lns3.36.1-point-to-point-layout-default -lns3.36.1-uan-default -lns3.36.1-wave-default -lns3.36.1-buildings-default -lns3.36.1-point-to-point-default -lns3.36.1-fd-net-device-default -lns3.36.1-core-default -lns3.36.1-olsr-default -lns3.36.1-csma-layout-default -lns3.36.1-csma-default -lns3.36.1-mobility-default -lns3.36.1-aodv-default -lns3.36.1-mesh-default -lns3.36.1-tap-bridge-default -lns3.36.1-spectrum-default -lns3.36.1-lte-default -lns3.36.1-sixlowpan-default -lns3.36.1-dsr-default -lns3.36.1-applications-default -lns3.36.1-virtual-net-device-default -lns3.36.1-wifi-default -lns3.36.1-stats-default -lns3.36.1-internet-apps-default
+  [32mRun the following command before running benchmarks:[0m
+  [32mexport LD_LIBRARY_PATH=./ns-3//build/lib[0m
+  g++ -std=c++17 -fPIC -g  -D NS3_VERSION=\""3.36.1"\" -D NS3_LOG_ENABLE -L ./ns-3//build/lib/ -I ./ns-3//build/include/ -lns3.36.1-bridge-default -lns3.36.1-traffic-control-default -lns3.36.1-network-default -lns3.36.1-dsdv-default -lns3.36.1-propagation-default -lns3.36.1-nix-vector-routing-default -lns3.36.1-antenna-default -lns3.36.1-topology-read-default -lns3.36.1-flow-monitor-default -lns3.36.1-lr-wpan-default -lns3.36.1-internet-default -lns3.36.1-wimax-default -lns3.36.1-config-store-default -lns3.36.1-netanim-default -lns3.36.1-energy-default -lns3.36.1-point-to-point-layout-default -lns3.36.1-uan-default -lns3.36.1-wave-default -lns3.36.1-buildings-default -lns3.36.1-point-to-point-default -lns3.36.1-fd-net-device-default -lns3.36.1-core-default -lns3.36.1-olsr-default -lns3.36.1-csma-layout-default -lns3.36.1-csma-default -lns3.36.1-mobility-default -lns3.36.1-aodv-default -lns3.36.1-mesh-default -lns3.36.1-tap-bridge-default -lns3.36.1-spectrum-default -lns3.36.1-lte-default -lns3.36.1-sixlowpan-default -lns3.36.1-dsr-default -lns3.36.1-applications-default -lns3.36.1-virtual-net-device-default -lns3.36.1-wifi-default -lns3.36.1-stats-default -lns3.36.1-internet-apps-default src/simplemix.cpp src/callbacks.cpp -o simplemix  -D NS3_LOG_ENABLE -L ./ns-3//build/lib/ -I ./ns-3//build/include/ -lns3.36.1-bridge-default -lns3.36.1-traffic-control-default -lns3.36.1-network-default -lns3.36.1-dsdv-default -lns3.36.1-propagation-default -lns3.36.1-nix-vector-routing-default -lns3.36.1-antenna-default -lns3.36.1-topology-read-default -lns3.36.1-flow-monitor-default -lns3.36.1-lr-wpan-default -lns3.36.1-internet-default -lns3.36.1-wimax-default -lns3.36.1-config-store-default -lns3.36.1-netanim-default -lns3.36.1-energy-default -lns3.36.1-point-to-point-layout-default -lns3.36.1-uan-default -lns3.36.1-wave-default -lns3.36.1-buildings-default -lns3.36.1-point-to-point-default -lns3.36.1-fd-net-device-default -lns3.36.1-core-default -lns3.36.1-olsr-default -lns3.36.1-csma-layout-default -lns3.36.1-csma-default -lns3.36.1-mobility-default -lns3.36.1-aodv-default -lns3.36.1-mesh-default -lns3.36.1-tap-bridge-default -lns3.36.1-spectrum-default -lns3.36.1-lte-default -lns3.36.1-sixlowpan-default -lns3.36.1-dsr-default -lns3.36.1-applications-default -lns3.36.1-virtual-net-device-default -lns3.36.1-wifi-default -lns3.36.1-stats-default -lns3.36.1-internet-apps-default
+  rm wifisim
+  g++ --std=c++17 -fPIC -L ./simgrid/build/lib -lsimgrid -I ./simgrid/build/include -I ./simgrid/include -I ./simgrid/ -I ./simgrid/build/ wifisim.cpp -o wifisim -L ./simgrid/build/lib -lsimgrid -I ./simgrid/build/include -I ./simgrid/include -I ./simgrid/ -I ./simgrid/build/
+  rm wifiSimNS
+  g++ -std=c++17 -fPIC -g -D NS3_VERSION=\""3.36.1"\" -D NS3_LOG_ENABLE -L ./ns-3//build/lib/ -I ./ns-3//build/include/ -lns3.36.1-bridge-default -lns3.36.1-traffic-control-default -lns3.36.1-network-default -lns3.36.1-dsdv-default -lns3.36.1-propagation-default -lns3.36.1-nix-vector-routing-default -lns3.36.1-antenna-default -lns3.36.1-topology-read-default -lns3.36.1-flow-monitor-default -lns3.36.1-lr-wpan-default -lns3.36.1-internet-default -lns3.36.1-wimax-default -lns3.36.1-config-store-default -lns3.36.1-netanim-default -lns3.36.1-energy-default -lns3.36.1-point-to-point-layout-default -lns3.36.1-uan-default -lns3.36.1-wave-default -lns3.36.1-buildings-default -lns3.36.1-point-to-point-default -lns3.36.1-fd-net-device-default -lns3.36.1-core-default -lns3.36.1-olsr-default -lns3.36.1-csma-layout-default -lns3.36.1-csma-default -lns3.36.1-mobility-default -lns3.36.1-aodv-default -lns3.36.1-mesh-default -lns3.36.1-tap-bridge-default -lns3.36.1-spectrum-default -lns3.36.1-lte-default -lns3.36.1-sixlowpan-default -lns3.36.1-dsr-default -lns3.36.1-applications-default -lns3.36.1-virtual-net-device-default -lns3.36.1-wifi-default -lns3.36.1-stats-default -lns3.36.1-internet-apps-default wifisimNS.cpp -o wifiSimNS -D NS3_LOG_ENABLE -L ./ns-3//build/lib/ -I ./ns-3//build/include/ -lns3.36.1-bridge-default -lns3.36.1-traffic-control-default -lns3.36.1-network-default -lns3.36.1-dsdv-default -lns3.36.1-propagation-default -lns3.36.1-nix-vector-routing-default -lns3.36.1-antenna-default -lns3.36.1-topology-read-default -lns3.36.1-flow-monitor-default -lns3.36.1-lr-wpan-default -lns3.36.1-internet-default -lns3.36.1-wimax-default -lns3.36.1-config-store-default -lns3.36.1-netanim-default -lns3.36.1-energy-default -lns3.36.1-point-to-point-layout-default -lns3.36.1-uan-default -lns3.36.1-wave-default -lns3.36.1-buildings-default -lns3.36.1-point-to-point-default -lns3.36.1-fd-net-device-default -lns3.36.1-core-default -lns3.36.1-olsr-default -lns3.36.1-csma-layout-default -lns3.36.1-csma-default -lns3.36.1-mobility-default -lns3.36.1-aodv-default -lns3.36.1-mesh-default -lns3.36.1-tap-bridge-default -lns3.36.1-spectrum-default -lns3.36.1-lte-default -lns3.36.1-sixlowpan-default -lns3.36.1-dsr-default -lns3.36.1-applications-default -lns3.36.1-virtual-net-device-default -lns3.36.1-wifi-default -lns3.36.1-stats-default -lns3.36.1-internet-apps-default
+  :end:
+
+
+* Reproduce results
+
+** Tweak launcher scripts
+
+TODO
+
+** Run the microbenchmarks
+
+To run all the experiments sequentially, specify the path of the hosts file in
+[[./microbenchmarks/run_all_benchmarks.sh]] (set it to [[./microbenchmarks/hosts.txt]]
+if you run it locally), then run the file.
+
+#+BEGIN_SRC bash :results none
+  cd microbenchmarks
+  bash run_all_benchmarks.sh
+#+END_SRC
+
+** Run the large experiment
+
+TODO
+

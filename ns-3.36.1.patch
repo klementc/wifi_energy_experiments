@@ -1,0 +1,18 @@
+--- /home/clem/Code/gitlab.inria.fr/clement/wifi_energy_reprod/large_experiment/ns3/ns-3/src/wifi/model/wifi-radio-energy-model.cc	2021-01-09 19:19:23.000000000 +0100
++++ /home/clem/Code/gitlab.com/nsnam/ns-allinone-3.36.1/ns-3.36.1/src/wifi/model/wifi-radio-energy-model.cc	2022-08-18 15:36:45.035726682 +0200
+@@ -277,6 +277,15 @@
+   double remainingEnergy = m_source->GetRemainingEnergy ();
+   double supplyVoltage = m_source->GetSupplyVoltage ();
+   double current = GetStateA (state);
++
++  // fix case of current = 0 (to verify the dynamic energy consumption)
++  if(current==0)
++   {
++     NS_LOG_DEBUG("WifiRadioEnergyModel: current is 0 so return: "<<Simulator::GetMaximumSimulationTime()-Simulator::Now ());
++     return Simulator::GetMaximumSimulationTime()-Simulator::Now ();
++   }
++
++
+   return Seconds (remainingEnergy / (current * supplyVoltage));
+ }
+ 
