@@ -33,7 +33,7 @@ echo "Reproduce Scenario: Pairs single wlan bidir"
 bitRates="44.23Mbps" # bitRate in SimGrid in Mbps (obtained from the final plot>
 useNS3=1
 local_only=0
-name="pairs_unidir"
+name="pairs_bidir"
 useDecayModel=0
 threshRTSCTS=100
 seeds="$(seq 1 1 100)"

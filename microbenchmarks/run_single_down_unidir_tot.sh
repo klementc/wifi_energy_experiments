@@ -32,7 +32,7 @@ echo "Reproduce Scenario: Unidir down (total energy consumption)"
 
 bitRates="44.23Mbps" # bitRate in SimGrid in Mbps (obtained from the final plot of ns-3 values)
 useNS3=1
-local_only=1
+local_only=0
 name="unidir_down_tot"
 useDecayModel=0
 threshRTSCTS=100

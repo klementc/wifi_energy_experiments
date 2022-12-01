@@ -7,7 +7,16 @@ Part of the code samples proposed in this file can be executed directly using or
 
 * Structure
 
-** Dependencies
+- [[./microbenchmarks]]: contains the results, script and code for the microbenchmarks (single WLan,
+  the up/down traffic experiments, the simplemix experiment)
+  - [[./microbenchmarks/logs]]: archives of the full logs of each scenario
+- [[./large_use_case]]: contains the results, scripts and code for the large experiment
+  - [[./large_use_case/logs]]: archive of the full logs
+- [[./analysis]]: contains the visualisations and error computations we made for the
+  paper. The code to generate the figures of the paper, as well as additional
+  visualisations can be seen.
+  
+* Dependencies
 
 - SimGrid
   - Version: patched v3.32.1 (soon in the official repository of SimGrid)
@@ -19,7 +28,7 @@ Part of the code samples proposed in this file can be executed directly using or
   - Patch file: [[./ns-3.36.1.patch]]
 
 
-*** Install dependencies
+** Install dependencies
 
 Run the following code block to install dependencies in ${currDir}
 
@@ -50,7 +59,7 @@ Run the following code block to install dependencies in ${currDir}
 
 #+END_SRC
 
-*** Build executable files
+** Build executable files
 
 Run the following code block to build the binaries of the simulators
 
@@ -99,7 +108,49 @@ Run the following code block to build the binaries of the simulators
 
 ** Tweak launcher scripts
 
-TODO
+*** Execution setup
+
+The launchers can be executed in 2 different modes:
+- Local execution: All experiments are run on your local machine. The results
+  will be written in a file named /"results_local.csv"/ and logs will be saved
+  under the /"logs"/ directory. To execute locally the experiments, you need to
+  set the ~local_only~ variable to 1 in the launcher
+  ([[./microbenchmarks/run_control_frames_dyn.sh]] for instance), and execute it
+  with the following command: ~hostFile=hosts.txt bash run_control_frames_dyn.sh~.
+  This will generate an /args/ file under the name ~args_TIMESTAMP_DEFAULT.sh~
+  containing 1 line per simulation to execute, with the different parameters to
+  be used.
+  Run the experiments with the command: ~localOnlyArgsFile=<argsFile> ./run.sh~
+  and wait until it finishes
+  **Warning:** Since there are several hundred/thousands of simulations to be
+  executed in both SimGrid and ns-3 in each scenario, this option is very time
+  consuming. Either reduce the amount of experiments by modifying the
+  parameters, or execute the benchmarks using several nodes with a /parallel execution/
+- Parallel execution: This is the default execution mode. You need to specify in
+  a /HostFile/ the name of the machines that will execute the experiments. In
+  this file, put 1 machine per line, and make sure you have an ssh access to
+  these machines and the repository is installed on all of them. Then run the
+  launcher, which will use the hostFile to dispatch the simulations and gather
+  the results: ~hostFile=<hostFile> bash run_control_frames_dyn.sh~
+
+**Our setup:** We used the [[https://www.grid5000.fr/w/Grid5000:Home][Grid'5000 testbed]] to execute the experiments,
+allowing us to use several nodes in parallel. We used the cluster Paravance in
+Rennes. The hardware of those nodes is available online: [[https://www.grid5000.fr/w/Rennes:Hardware#paravance]]
+
+
+*** Modify the number of parallel executions on single machines
+
+Depending on the nodes you use, you will be able to execute more or less
+simulations concurrently (1 simulation takes 1 CPU core). You can modify the
+number of concurrent simulations to be performed in the script executed by your
+experiments. The variable to modify is ~nSub~:
+- [[./microbenchmarks/run.sh]]
+- [[./microbenchmarks/run_simplemix.sh]]
+- [[./large_use_case/run.sh]]
+
+In the case of the large_use_case experiment, take care of the amount of memory
+used by the experiment. Around 80 GB of memory were required for the
+largest experiments.
 
 ** Run the microbenchmarks
 
