@@ -80,7 +80,7 @@ for i in range(nbCells):
   platf_sg.write("""        <!-- Declare the wifi media (after hosts because our parser is sometimes annoying) -->
         <link id="AP_{}" sharing_policy="WIFI" bandwidth="{}" latency="0ms">
                   <prop id = "control_duration" value = "{}"/>
-                  <prop id = "wifi_watt_values" value = "0.82:1.14:0.94:0.10"/>
+                  <prop id = "wifi_watt_values" value = "0:1.14:0.94:0.10"/>
         </link>
         <router id="router_{}"/>
     </zone>\n""".format(i, bw, corrF, i))
