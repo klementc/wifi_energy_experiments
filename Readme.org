@@ -165,5 +165,15 @@ if you run it locally), then run the file.
 
 ** Run the large experiment
 
-TODO
+To run the experiments, specify the path of the hosts file and run the launcher
+using:
 
+#+BEGIN_SRC bash :results none
+  cd large_use_case/
+  hostFile=~/hostsRennes.txt bash run_g5k_largewifi.sh
+#+END_SRC
+
+To obtain the results for the total energy consumption, set the idle energy to
+0.82 in [[./large_use_case/platform_generator.py]] for SimGrid, and comment the line
+modifying the IDLE energy to 0 in [[./large_use_case/ns-3/wifisimNS.cpp]] (run the
+make command then to rebuild the simulator).
